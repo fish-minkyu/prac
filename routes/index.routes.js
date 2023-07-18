@@ -1,8 +1,9 @@
 const express = require("express")
 const router = express.Router()
-// const loginRouter = require("./login.routes.js")
 const signupRouter = require("./signup.routes.js")
+const loginRouter = require("./login.routes.js")
+const memoRouter = require("./memo.routes.js")
 
-router.use("", [signupRouter])
+router.use("", [signupRouter, loginRouter, memoRouter])
 
 module.exports = router

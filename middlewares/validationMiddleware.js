@@ -45,7 +45,7 @@ const memoSchema = Joi.object().keys({
         "string.empty": "제목은 반드시 입력해야 합니다.",
         "any.required": "제목은 반드시 입력해야 합니다.",
     }),
-    content: Joi.string.required().messages({
+    content: Joi.string().required().messages({
         "string.base": "내용은 문자열 형식입니다.",
         "string.empty": "내용을 입력해주세요.",
         "any.required": "내용을 입력해주세요."
@@ -55,5 +55,5 @@ const memoSchema = Joi.object().keys({
 module.exports = {
     signupSchema,
     loginSchema,
-    titleSchema
+    memoSchema
 }

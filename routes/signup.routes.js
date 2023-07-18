@@ -3,8 +3,9 @@ const router = express.Router()
 const { signupSchema } = require("../middlewares/validationMiddleware.js")
 // Sequelize의 모델 클래스를 상속하기 위해서 Users, UserInfo가 객체가 됨
 const { Users, UserInfos } = require("../models")
+const bcrypt = require("bcrypt")
 
-// 회원가입 API
+// 회원가입 API_완료
 router.post("/signup", async(req, res) => {
     const {nickname, password, confirm, email, age, birthyear} = req.body
 
@@ -18,6 +19,7 @@ router.post("/signup", async(req, res) => {
         // body 데이터 유효성 검사
         if (error) {
             res.status(412).json({errorMessage: error.details[0].message})
+            return
         }
 
         // 닉네임이 중복되는 경우
@@ -25,7 +27,6 @@ router.post("/signup", async(req, res) => {
         res.status(412).json({errorMessage: '이미 존재하는 닉네임입니다.'})
         return
         }
-
 
         // 닉네임이 포함되어 있는 경우
         if (password.includes(nickname)) {
@@ -44,8 +45,18 @@ router.post("/signup", async(req, res) => {
             return
         } 
 
+        // 비밀번호에 닉네임 포함여부 확인
+        const regexp = new RegExp(`${nickname}`)
+        if (regexp.test(password)) {
+            return res.status(412).json({errorMessage: '비밀번호에 닉네임이 포함되어 있습니다.'})
+        }
+
         // 회원가입
-        const signup = await Users.create({nickname: nickname, password: password})
+        // 소금 뿌리기
+        const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_SALT))
+        const hashedPassword = await bcrypt.hash(password, salt)
+
+        const signup = await Users.create({nickname: nickname, password: hashedPassword})
 
         const userInfo = await UserInfos.create({ // userId, nickname, email, age, birthyear
             userId: signup.userId,
@@ -63,7 +74,7 @@ router.post("/signup", async(req, res) => {
     }
 })
 
-// 회원정보 조회 API
+// 회원정보 조회 API_완료
 router.get("/signup", async(req, res) => {
     try {
         const user = await Users.findAll({

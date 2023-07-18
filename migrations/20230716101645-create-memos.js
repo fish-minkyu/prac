@@ -12,7 +12,6 @@ module.exports = {
       nickname: {
         allowNull: false,
         type: Sequelize.STRING,
-        unique: true,
         references: {
           model: 'Users',
           key: 'nickname'

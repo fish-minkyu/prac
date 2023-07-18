@@ -3,6 +3,8 @@ const cookieParser = require("cookie-parser");
 const app = express();
 const indexRouter = require("./routes/index.routes.js");
 const PORT = 2023
+const env = require('dotenv');
+env.config()
 
 
 app.use(express.json()) 

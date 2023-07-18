@@ -1,11 +1,11 @@
 const express = require("express")
 const router = express.Router()
 const {loginSchema} = require("../middlewares/validationMiddleware.js")
-const {Users} = require("../models/users.js")
+const { Users } = require("../models/users.js")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 
-// 로그인 API
+// 로그인 API_완료
 router.post("/login", async (req, res) => {
     const { nickname, password} = req.body
     try {
@@ -28,13 +28,14 @@ router.post("/login", async (req, res) => {
 
         // jwt token 생성
         // token = nickname & 비밀키 & 만료시간
-        const token = jwt.sign({nickname}, 'secretKey', {expiresIn: '1h'})
+        const token = jwt.sign({nickname}, 'secretKey', {expiresIn: '3h'})
         // 쿠키에 담아 클라이언트 헤더로 전송, 
         // 쿠키이름 : 'Authorization'
         // Bearer: JWT형식임을 나타냄
         res.cookie('Authorization', `Bearer ${token}`)
         res.status(200).json({ token: token })
     } catch (err) {
+        console.log(err)
         res.status(400).json({errorMessage: '로그인에 실패하였습니다.'})
     }
 });

@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken")
-const {Users} = require("../models/users.js")
+const {Users} = require("../models")
 
 
-const jwtValidation = async (req, res) => {
+const jwtValidation = async (req, res, next) => {
     const {Authorization} = req.cookies
     try {
         const [tokenType, token] = (Authorization ?? "").split(" ")
@@ -11,7 +11,7 @@ const jwtValidation = async (req, res) => {
         }
 
         // token에서 nickname 추출
-        const {nickname} = json.verify(token, 'secretKey')
+        const {nickname} = jwt.verify(token, 'secretKey')
 
         // token에서 나온 nickname과 DB nickname과 일치하는 것이 있다면 추출
         const user = await Users.findOne({where: {nickname: nickname}})
@@ -23,12 +23,12 @@ const jwtValidation = async (req, res) => {
         }
 
         res.locals.user = user
-        console.log('res.locals.user= ', res.locals.uer)
-
         next()
     } catch (err) {
+        console.log(err)
         res.clearCookie('Authorization')
         res.status(403).json({errorMessage: '전달된 쿠키에서 오류가 발생하였습니다.'})
+        return
     }
 
 }
