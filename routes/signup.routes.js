@@ -4,10 +4,13 @@ const { signupSchema } = require("../middlewares/validationMiddleware.js")
 // Sequelize의 모델 클래스를 상속하기 위해서 Users, UserInfo가 객체가 됨
 const { Users, UserInfos } = require("../models")
 const bcrypt = require("bcrypt")
+const {sequelize} = require("../models")
 
 // 회원가입 API_완료
 router.post("/signup", async(req, res) => {
     const {nickname, password, confirm, email, age, birthyear} = req.body
+
+    const transaction = await sequelize.transaction()
 
     try {
         const isExistUser = await Users.findOne({where: {nickname: nickname}})
@@ -56,7 +59,13 @@ router.post("/signup", async(req, res) => {
         const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_SALT))
         const hashedPassword = await bcrypt.hash(password, salt)
 
-        const signup = await Users.create({nickname: nickname, password: hashedPassword})
+        // 트랜잭션
+
+        const signup = await Users.create({
+            nickname: nickname, 
+            password: hashedPassword
+            },
+            {transaction})
 
         const userInfo = await UserInfos.create({ // userId, nickname, email, age, birthyear
             userId: signup.userId,
@@ -64,11 +73,14 @@ router.post("/signup", async(req, res) => {
             email: email,
             age: age,
             birthyear: birthyear
-        })
+        },
+        {transaction})
 
+        await transaction.commit()
         res.status(201).json({message: '회원가입이 완료되었습니다.'})
 
     } catch (err) {
+        await transaction.rollback()
         console.log(err)
         res.status(400).json({errorMessage: '요청한 데이터 형식이 올바르지 않습니다.'})
     }
